@@ -55,8 +55,9 @@ paths.each do |path|
 
   state, ok = gh("api", "repos/#{repo}/actions/workflows/#{file}", "--jq", ".state")
   unless ok
-    # Not registered yet (file not on the default branch); next run gets it.
-    puts "skip #{file}: #{state}"
+    # GitHub only registers a workflow in a fork once it has triggered here,
+    # so it can't be disabled before that; a later run catches it.
+    puts "not registered yet #{file}"
     next
   end
   if state.start_with?("disabled")
