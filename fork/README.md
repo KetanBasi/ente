@@ -106,6 +106,15 @@ when the merge is clean and `gh` is signed in.
 - Building, signing and deploying for real use, and a stock self-hosted
   baseline (P0), are not part of this setup.
 
+## Home AI worker (P2)
+
+The one server change: a worker key allowlist in `museum.yaml`, an inbox of
+fileKeys that clients seal to the worker, and a read-only worker token
+modelled on Cast. Fork tables use their own migrations directory,
+`server/migrations/fork/`, tracked in `fork_schema_migrations`, so upstream
+migration numbers never collide with ours. See
+[docs/worker-api.md](docs/worker-api.md).
+
 ## License
 
 Ente is AGPL-3.0, and so is this fork. Anyone other than the owner who uses

@@ -29,6 +29,7 @@ import (
 	"github.com/ente/museum/pkg/repo/two_factor_recovery"
 
 	"github.com/ente/museum/pkg/controller/cast"
+	forkWorkerCtrl "github.com/ente/museum/pkg/controller/forkworker" // fork
 
 	"github.com/ente/museum/pkg/controller/commonbilling"
 	contactCtrl "github.com/ente/museum/pkg/controller/contact"
@@ -65,6 +66,7 @@ import (
 	discountCouponRepo "github.com/ente/museum/pkg/repo/discountcoupon"
 	"github.com/ente/museum/pkg/repo/embedding"
 	fileDataRepo "github.com/ente/museum/pkg/repo/filedata"
+	forkWorkerRepo "github.com/ente/museum/pkg/repo/forkworker" // fork
 	"github.com/ente/museum/pkg/repo/passkey"
 	"github.com/ente/museum/pkg/repo/remotestore"
 	socialrepo "github.com/ente/museum/pkg/repo/social"
@@ -881,6 +883,18 @@ func main() {
 	castAPI.GET("/files/download/v3/:fileID", castHandler.GetFileURLV3)
 	castAPI.GET("/diff", castHandler.GetDiff)
 	castAPI.GET("/info", castHandler.GetCollection)
+
+	// fork: home AI worker (allowlist, sealed-key inbox, read-only token).
+	forkWorkerKeys, err := forkWorkerCtrl.LoadKeys()
+	if err != nil {
+		log.Fatal(err)
+	}
+	forkWorkerController := forkWorkerCtrl.NewController(forkWorkerKeys,
+		&forkWorkerRepo.Repository{DB: db}, accessCtrl, fileRepo, fileController, fileDataCtrl)
+	forkWorkerMiddleware := middleware.ForkWorkerMiddleware{Ctrl: forkWorkerController}
+	forkWorkerAPI := server.Group("/fork/worker-api")
+	forkWorkerAPI.Use(forkWorkerMiddleware.WorkerAuthMiddleware())
+	api.RegisterForkWorkerRoutes(publicAPI, storageAPI, forkWorkerAPI, &api.ForkWorkerHandler{Ctrl: forkWorkerController})
 	familyHandler := &api.FamilyHandler{
 		Controller: familyController,
 	}
@@ -1221,6 +1235,11 @@ func setupDatabase() *sql.DB {
 	}
 	log.Println("Loaded migration scripts")
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+		log.Panic(err)
+		panic(err)
+	}
+	// fork: the fork's own migrations, tracked in their own table.
+	if err := forkWorkerRepo.MigrateUp(db, "file://migrations/fork"); err != nil {
 		log.Panic(err)
 		panic(err)
 	}
