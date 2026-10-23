@@ -1,7 +1,7 @@
 use std::{path::PathBuf, process::Command};
 
-use postgresql_embedded::{Settings, VersionReq};
 use postgresql_embedded::blocking::PostgreSQL;
+use postgresql_embedded::{Settings, VersionReq};
 
 use crate::{
     TestResult,
