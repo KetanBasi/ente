@@ -19,6 +19,11 @@ upstream_branch="${UPSTREAM_BRANCH:-main}"
 sync_branch="${SYNC_BRANCH:-fork/sync-upstream}"
 base_branch="${BASE_BRANCH:-main}"
 
+# In a fork, gh defaults to the parent repository (ente-io/ente) for pull
+# requests, which the token can't write to. Pin it to this repository.
+repo="${GITHUB_REPOSITORY:-$(git remote get-url origin | sed -E 's#^(git@github.com:|https://([^@/]*@)?github.com/)##; s#\.git$##')}"
+export GH_REPO="$repo"
+
 if git remote get-url upstream >/dev/null 2>&1; then
     git remote set-url upstream "$upstream_url"
 else
@@ -40,18 +45,26 @@ behind="$(git rev-list --count "$base..$theirs")"
 theirs_sha="$(git rev-parse --short "$theirs")"
 echo "$base_branch is $behind commits behind $theirs ($theirs_sha)."
 
-git checkout -B "$sync_branch" "$base"
-if ! git merge --no-ff --no-edit -m "Merge upstream ente-io/ente $upstream_branch @ $theirs_sha" "$theirs"; then
-    echo "::error::Merge conflict with upstream. Conflicting paths:"
-    git diff --name-only --diff-filter=U | sed 's/^/  /'
-    git merge --abort
-    exit 1
-fi
+# Keep an existing sync branch that already merges this upstream commit on top
+# of the current base, so reruns don't force-push and restart CI for nothing.
+if git fetch --no-tags --filter=blob:none origin "$sync_branch" 2>/dev/null \
+    && git merge-base --is-ancestor "$theirs" FETCH_HEAD \
+    && git merge-base --is-ancestor "$base" FETCH_HEAD; then
+    echo "$sync_branch already contains $theirs_sha on top of $base_branch; not pushing."
+else
+    git checkout -B "$sync_branch" "$base"
+    if ! git merge --no-ff --no-edit -m "Merge upstream ente-io/ente $upstream_branch @ $theirs_sha" "$theirs"; then
+        echo "::error::Merge conflict with upstream. Conflicting paths:"
+        git diff --name-only --diff-filter=U | sed 's/^/  /'
+        git merge --abort
+        exit 1
+    fi
 
-if ! git push --force origin "$sync_branch"; then
-    echo "::error::Push failed. If upstream changed .github/workflows, the default"
-    echo "::error::GITHUB_TOKEN may not push it: add a FORK_SYNC_TOKEN secret (see fork/README.md)."
-    exit 1
+    if ! git push --force origin "$sync_branch"; then
+        echo "::error::Push failed. If upstream changed .github/workflows, the default"
+        echo "::error::GITHUB_TOKEN may not push it: add a FORK_SYNC_TOKEN secret (see fork/README.md)."
+        exit 1
+    fi
 fi
 
 title="Sync upstream ente-io/ente ($behind commits, $theirs_sha)"
@@ -64,7 +77,7 @@ Opened by \`fork/scripts/sync-upstream.sh\`. Merge with a merge commit (not squa
 pr_failed() {
     echo "::error::Could not open or update the sync PR. The $sync_branch branch is pushed."
     echo "::error::Check that FORK_SYNC_TOKEN has Pull requests: Read and write, then re-run,"
-    echo "::error::or open the PR by hand: https://github.com/${GITHUB_REPOSITORY:-<owner>/<repo>}/compare/$base_branch...$sync_branch"
+    echo "::error::or open the PR by hand: https://github.com/$repo/compare/$base_branch...$sync_branch"
     exit 1
 }
 
