@@ -1,5 +1,5 @@
-//! `VirtualAlloc` + `VirtualLock` regions with guard pages, encrypted with
-//! `CryptProtectMemory` while idle.
+// `VirtualAlloc` + `VirtualLock` regions with guard pages, encrypted with
+// `CryptProtectMemory` while idle.
 
 use std::ffi::c_void;
 use std::io;
@@ -21,7 +21,7 @@ pub struct Raw {
     pub data: *mut u8,
     pub data_len: usize,
     pub backing: Backing,
-    /// Whether the data pages are currently CryptProtectMemory-encrypted.
+    // Whether the data pages are currently CryptProtectMemory-encrypted.
     sealed: bool,
 }
 

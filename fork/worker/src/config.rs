@@ -1,5 +1,5 @@
-//! `worker.toml`: one file picks the profile, stages, models, precision,
-//! batch size and VRAM budget. See fork/worker/worker.example.toml.
+// `worker.toml`: one file picks the profile, stages, models, precision,
+// batch size and VRAM budget. See fork/worker/worker.example.toml.
 
 use std::path::{Path, PathBuf};
 
@@ -18,19 +18,19 @@ pub enum Error {
     Invalid(String),
 }
 
-/// Deployment presets from the plan. Explicit settings override them.
+// Deployment presets from the plan. Explicit settings override them.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Default)]
 #[serde(rename_all = "kebab-case")]
 pub enum Profile {
-    /// Regex, EXIF, hashes, blur. No GPU.
+    // Regex, EXIF, hashes, blur. No GPU.
     #[default]
     CpuOnly,
-    /// OCR + text Laya; CLIP and faces left to clients.
+    // OCR + text Laya; CLIP and faces left to clients.
     SmallGpu,
-    /// Every stage on a 16 GB card, about 6 GB budget.
+    // Every stage on a 16 GB card, about 6 GB budget.
     #[serde(rename = "home-16gb")]
     Home16gb,
-    /// Each stage its own queue, scaled separately.
+    // Each stage its own queue, scaled separately.
     LargeServer,
 }
 
@@ -54,13 +54,13 @@ pub enum Precision {
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 #[serde(tag = "source", rename_all = "kebab-case", deny_unknown_fields)]
 pub enum Identity {
-    /// A systemd credential (`LoadCredentialEncrypted=`), which systemd
-    /// decrypts with the TPM into a non-swappable ramfs at start.
+    // A systemd credential (`LoadCredentialEncrypted=`), which systemd
+    // decrypts with the TPM into a non-swappable ramfs at start.
     SystemdCreds {
         #[serde(default = "default_credential")]
         credential: String,
     },
-    /// Base64 of the 32 byte secret on stdin, piped from a secret store.
+    // Base64 of the 32 byte secret on stdin, piped from a secret store.
     Stdin,
 }
 
@@ -68,19 +68,19 @@ fn default_credential() -> String {
     "ente-worker-key".to_owned()
 }
 
-/// The PII kinds the regex stage knows. See `stages::pii`.
+// The PII kinds the regex stage knows. See `stages::pii`.
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, Hash, Deserialize, serde::Serialize, PartialOrd, Ord,
 )]
 #[serde(rename_all = "kebab-case")]
 pub enum PiiKind {
-    /// Luhn-checked payment card numbers.
+    // Luhn-checked payment card numbers.
     Card,
-    /// IBAN with a valid mod-97 checksum.
+    // IBAN with a valid mod-97 checksum.
     Iban,
-    /// Passport / ID machine-readable zone with valid check digits.
+    // Passport / ID machine-readable zone with valid check digits.
     Mrz,
-    /// Indonesian NIK (16 digits, valid region code and birth date).
+    // Indonesian NIK (16 digits, valid region code and birth date).
     Nik,
     Email,
     Phone,
@@ -121,7 +121,7 @@ struct RawConfig {
 #[serde(deny_unknown_fields)]
 struct RawServer {
     endpoint: String,
-    /// Expected base64 X25519 public key; checked against the private key.
+    // Expected base64 X25519 public key; checked against the private key.
     public_key: Option<String>,
     timeout_secs: Option<u64>,
 }
@@ -152,7 +152,7 @@ struct RawStages {
     gliner_pii: Option<bool>,
 }
 
-/// Model paths for the later, model-backed stages. Unused by CPU stages.
+// Model paths for the later, model-backed stages. Unused by CPU stages.
 #[derive(Debug, Default, Clone, Deserialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct Models {
@@ -166,7 +166,7 @@ pub struct Models {
 #[derive(Debug, Default, Clone, Copy, Deserialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct Memory {
-    /// Refuse to start without Linux `memfd_secret`.
+    // Refuse to start without Linux `memfd_secret`.
     #[serde(default)]
     pub require_memfd_secret: bool,
 }
@@ -204,14 +204,14 @@ pub struct Config {
 pub struct Runtime {
     pub device: Device,
     pub precision: Precision,
-    /// Files whose keys are held (and decrypted) at once.
+    // Files whose keys are held (and decrypted) at once.
     pub batch_size: usize,
-    /// Files analysed in parallel, at most `batch_size`.
+    // Files analysed in parallel, at most `batch_size`.
     pub concurrency: usize,
-    /// Hard VRAM cap for model stages; 0 means no GPU use.
+    // Hard VRAM cap for model stages; 0 means no GPU use.
     pub vram_budget_mb: u64,
     pub poll_interval_secs: u64,
-    /// Originals above this are not downloaded; thumbnail-only stages run.
+    // Originals above this are not downloaded; thumbnail-only stages run.
     pub max_original_mb: u64,
 }
 
@@ -245,8 +245,8 @@ impl Stages {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct MlData {
-    /// Only add `x_enrich` to records that already carry current `face` and
-    /// `clip` indexes, so stock mobile and web never rewrite the record.
+    // Only add `x_enrich` to records that already carry current `face` and
+    // `clip` indexes, so stock mobile and web never rewrite the record.
     pub require_face_clip: bool,
     pub min_face_version: u64,
     pub min_clip_version: u64,
@@ -293,7 +293,7 @@ fn preset(profile: Profile) -> Preset {
     }
 }
 
-/// Upper bound on held keys: 1000 is the server's inbox batch cap.
+// Upper bound on held keys: 1000 is the server's inbox batch cap.
 pub const MAX_BATCH: usize = 1000;
 
 impl Config {
@@ -418,8 +418,8 @@ impl Config {
         Ok(())
     }
 
-    /// Bytes of locked memory the worker needs: the key slab, the private
-    /// key and the tokens.
+    // Bytes of locked memory the worker needs: the key slab, the private
+    // key and the tokens.
     pub fn locked_bytes(&self) -> usize {
         self.runtime.batch_size * crate::secure_mem::KEY_BYTES + 3 * crate::secure_mem::page_size()
     }

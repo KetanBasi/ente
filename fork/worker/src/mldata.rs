@@ -1,9 +1,9 @@
-//! Read, merge and write Ente's `mldata` file-data record.
-//!
-//! The record is gzipped JSON encrypted (single-chunk secretstream) with the
-//! fileKey. Museum cannot see inside it, so this module is what keeps Ente's
-//! own `face` and `clip` indexes, and any other key, byte-for-byte intact:
-//! the worker only ever replaces its own [`NAMESPACE`] key.
+// Read, merge and write Ente's `mldata` file-data record.
+//
+// The record is gzipped JSON encrypted (single-chunk secretstream) with the
+// fileKey. Museum cannot see inside it, so this module is what keeps Ente's
+// own `face` and `clip` indexes, and any other key, byte-for-byte intact:
+// the worker only ever replaces its own [`NAMESPACE`] key.
 
 use std::io::{Read, Write};
 
@@ -14,10 +14,10 @@ use serde_json::{Map, Value};
 
 use crate::config::MlData;
 
-/// The worker's one top-level key in the record.
+// The worker's one top-level key in the record.
 pub const NAMESPACE: &str = "x_enrich";
 
-/// Same cap web uses when it gunzips the record.
+// Same cap web uses when it gunzips the record.
 pub const MAX_BYTES: u64 = 4 * 1024 * 1024;
 
 #[derive(Debug, thiserror::Error)]
@@ -34,16 +34,16 @@ pub enum Error {
     Json(serde_json::Error),
 }
 
-/// The decrypted record plus the server timestamp it was read at, which the
-/// write must send back as `lastUpdatedAt`.
+// The decrypted record plus the server timestamp it was read at, which the
+// write must send back as `lastUpdatedAt`.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Record {
     pub fields: Map<String, Value>,
-    /// 0 when the file had no record yet.
+    // 0 when the file had no record yet.
     pub updated_at: i64,
 }
 
-/// Why a record is not ready for `x_enrich` yet.
+// Why a record is not ready for `x_enrich` yet.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum NotReady {
     NoRecord,
@@ -101,8 +101,8 @@ impl Record {
         Ok(Self { fields, updated_at })
     }
 
-    /// Checks that Ente's own indexes are present and current, so that
-    /// stock clients will not re-index (and overwrite) this record.
+    // Checks that Ente's own indexes are present and current, so that
+    // stock clients will not re-index (and overwrite) this record.
     pub fn ready(&self, rules: &MlData) -> Result<(), NotReady> {
         if !rules.require_face_clip {
             return Ok(());
@@ -133,7 +133,7 @@ impl Record {
         Ok(())
     }
 
-    /// Replaces only the worker's namespaced key.
+    // Replaces only the worker's namespaced key.
     pub fn with_enrichment(&self, enrichment: Value) -> Self {
         let mut fields = self.fields.clone();
         fields.insert(NAMESPACE.to_owned(), enrichment);
@@ -143,8 +143,8 @@ impl Record {
         }
     }
 
-    /// Gzips and encrypts the record: `(encryptedData, decryptionHeader)`
-    /// as standard base64, ready for `PUT /files/data`.
+    // Gzips and encrypts the record: `(encryptedData, decryptionHeader)`
+    // as standard base64, ready for `PUT /files/data`.
     pub fn encrypt(&self, key: &Key) -> Result<(String, String), Error> {
         let json = serde_json::to_vec(&self.fields).map_err(Error::Json)?;
         let mut gz = flate2::write::GzEncoder::new(Vec::new(), flate2::Compression::default());

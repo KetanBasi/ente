@@ -1,12 +1,12 @@
-//! Which device took or made the picture: camera make/model from EXIF, or,
-//! for screenshots (no camera tags), the devices whose screen has that
-//! exact pixel size. A size can match several phones, so it is a candidate
-//! list, not a verdict.
+// Which device took or made the picture: camera make/model from EXIF, or,
+// for screenshots (no camera tags), the devices whose screen has that
+// exact pixel size. A size can match several phones, so it is a candidate
+// list, not a verdict.
 
 use serde_json::{Value, json};
 
-/// (width, height in portrait, devices). Extend freely; entries only add
-/// candidates.
+// (width, height in portrait, devices). Extend freely; entries only add
+// candidates.
 const SCREENS: &[(u32, u32, &[&str])] = &[
     (1170, 2532, &["iPhone 12", "iPhone 13", "iPhone 14"]),
     (1179, 2556, &["iPhone 14 Pro", "iPhone 15", "iPhone 16"]),

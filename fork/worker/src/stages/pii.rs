@@ -1,6 +1,6 @@
-//! First PII layer: regex plus checksums on text. Cheap and precise; the
-//! GLiNER2 model is a later, second check. Only the kinds found and their
-//! counts are kept, never the matched values.
+// First PII layer: regex plus checksums on text. Cheap and precise; the
+// GLiNER2 model is a later, second check. Only the kinds found and their
+// counts are kept, never the matched values.
 
 use std::collections::BTreeMap;
 use std::sync::LazyLock;
@@ -10,8 +10,8 @@ use serde_json::{Value, json};
 
 use crate::config::PiiKind;
 
-/// Kinds that on their own make the worker suggest Hidden. Email and phone
-/// numbers are reported but are too common in screenshots to suggest it.
+// Kinds that on their own make the worker suggest Hidden. Email and phone
+// numbers are reported but are too common in screenshots to suggest it.
 pub const SUGGEST_HIDDEN: [PiiKind; 4] = [PiiKind::Card, PiiKind::Iban, PiiKind::Mrz, PiiKind::Nik];
 
 #[expect(clippy::expect_used, reason = "constant patterns, covered by tests")]
@@ -142,8 +142,8 @@ fn mrz_check(field: &str, check: char) -> bool {
     check.to_digit(10) == Some(sum % 10) || (check == '<' && sum.is_multiple_of(10))
 }
 
-/// Line 2 of a passport MRZ (TD3, 44 characters): document number, birth
-/// date, expiry and the composite check digit must all verify.
+// Line 2 of a passport MRZ (TD3, 44 characters): document number, birth
+// date, expiry and the composite check digit must all verify.
 pub fn mrz_td3_ok(line: &str) -> bool {
     let c: Vec<char> = line.chars().collect();
     if c.len() != 44 {
@@ -163,8 +163,8 @@ const PROVINCES: [u32; 38] = [
     71, 72, 73, 74, 75, 76, 81, 82, 91, 92, 93, 94, 95, 96,
 ];
 
-/// Indonesian NIK: a real province code, birth day 1..=31 (plus 40 for
-/// women), month 1..=12, and a non-zero serial.
+// Indonesian NIK: a real province code, birth day 1..=31 (plus 40 for
+// women), month 1..=12, and a non-zero serial.
 pub fn nik_ok(s: &str) -> bool {
     let d = digits(s);
     if d.len() != 16 {

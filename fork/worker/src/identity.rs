@@ -1,6 +1,6 @@
-//! The worker's long-term X25519 keypair. The private key is read once at
-//! start from a systemd credential or stdin, moved into guarded memory, and
-//! the buffer it came in is wiped.
+// The worker's long-term X25519 keypair. The private key is read once at
+// start from a systemd credential or stdin, moved into guarded memory, and
+// the buffer it came in is wiped.
 
 use std::io::{IsTerminal, Read};
 use std::path::PathBuf;
@@ -64,7 +64,7 @@ impl WorkerIdentity {
         Self::from_base64(&text, expected_public, options)
     }
 
-    /// Takes base64 of the 32 byte secret (surrounding whitespace allowed).
+    // Takes base64 of the 32 byte secret (surrounding whitespace allowed).
     pub fn from_base64(
         text: &[u8],
         expected_public: Option<&str>,
@@ -98,7 +98,7 @@ impl WorkerIdentity {
         &self.public_b64
     }
 
-    /// Opens a `crypto_box_seal` box addressed to this worker.
+    // Opens a `crypto_box_seal` box addressed to this worker.
     pub fn open(&self, ciphertext: &[u8]) -> Result<Zeroizing<Vec<u8>>, Error> {
         let mut region = self
             .secret
@@ -113,8 +113,8 @@ impl WorkerIdentity {
     }
 }
 
-/// `ente-worker keygen`: prints the secret (base64) on stdout for piping
-/// straight into `systemd-creds encrypt`, and the public key on stderr.
+// `ente-worker keygen`: prints the secret (base64) on stdout for piping
+// straight into `systemd-creds encrypt`, and the public key on stderr.
 pub fn keygen(allow_terminal: bool) -> anyhow::Result<()> {
     if std::io::stdout().is_terminal() && !allow_terminal {
         anyhow::bail!(
@@ -142,7 +142,7 @@ pub fn keygen(allow_terminal: bool) -> anyhow::Result<()> {
     Ok(())
 }
 
-/// Hex SHA-256 of the raw public key, as clients and museum show it.
+// Hex SHA-256 of the raw public key, as clients and museum show it.
 pub fn fingerprint(public_b64: &str) -> anyhow::Result<String> {
     use sha2::Digest;
     let raw = STANDARD.decode(public_b64.trim())?;

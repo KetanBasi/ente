@@ -1,10 +1,10 @@
-//! Blur score: variance of the Laplacian of the grayscale thumbnail,
-//! downscaled so scores are comparable across sizes.
+// Blur score: variance of the Laplacian of the grayscale thumbnail,
+// downscaled so scores are comparable across sizes.
 
 use ente_image::DecodedImage;
 
-/// Below this the picture is flagged blurry. A starting point, to be tuned
-/// against labelled photos; the raw score is stored too.
+// Below this the picture is flagged blurry. A starting point, to be tuned
+// against labelled photos; the raw score is stored too.
 pub const BLURRY_BELOW: f64 = 60.0;
 
 const MAX_SIDE: usize = 512;

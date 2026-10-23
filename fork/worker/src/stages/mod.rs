@@ -1,6 +1,6 @@
-//! CPU analysis stages. Each is a pure function of its inputs so it can be
-//! tested without a server; `Enrichment` assembles their output into the
-//! value stored under `x_enrich`.
+// CPU analysis stages. Each is a pure function of its inputs so it can be
+// tested without a server; `Enrichment` assembles their output into the
+// value stored under `x_enrich`.
 
 pub mod blur;
 pub mod device;
@@ -11,16 +11,16 @@ use serde_json::{Value, json};
 
 use crate::config::{PiiKind, Stages};
 
-/// Bumped when the shape of `x_enrich` changes; older records are rebuilt.
+// Bumped when the shape of `x_enrich` changes; older records are rebuilt.
 pub const SCHEMA_VERSION: u64 = 1;
 
-/// Everything a file offers the stages. Image data is the decoded thumbnail.
+// Everything a file offers the stages. Image data is the decoded thumbnail.
 pub struct Input<'a> {
     pub rgb: Option<&'a ente_image::DecodedImage>,
     pub exif: Option<&'a ente_exif::Metadata>,
-    /// Width and height of the original, from Ente's metadata.
+    // Width and height of the original, from Ente's metadata.
     pub dimensions: Option<(u32, u32)>,
-    /// Free text the owner or camera wrote: title, caption, EXIF description.
+    // Free text the owner or camera wrote: title, caption, EXIF description.
     pub texts: Vec<&'a str>,
 }
 

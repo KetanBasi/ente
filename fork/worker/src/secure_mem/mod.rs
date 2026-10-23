@@ -1,25 +1,25 @@
-//! Guarded, locked memory for the worker's secrets.
-//!
-//! Every secret the worker holds for longer than one function call (its
-//! X25519 private key, the fileKeys it was sent) lives in a [`SecretRegion`]:
-//!
-//! - its own pages, between two no-access guard pages, so an overrun faults
-//!   instead of reading or writing a neighbour;
-//! - locked in RAM (`mlock` / `VirtualLock`), so it never reaches swap or the
-//!   pagefile. If locking fails the allocation fails: there is no unlocked
-//!   fallback;
-//! - on Linux, backed by `memfd_secret(2)` when the kernel offers it, which
-//!   also removes the pages from the kernel's direct map;
-//! - excluded from core dumps (`MADV_DONTDUMP`) and, for private mappings,
-//!   from forked children (`MADV_WIPEONFORK`);
-//! - no-access whenever no job is reading it (on Windows also encrypted with
-//!   `CryptProtectMemory`);
-//! - zeroized before it is unlocked and unmapped.
-//!
-//! What it cannot cover: a key is briefly copied onto the stack (as
-//! `ente_core::crypto::Key`, which zeroizes on drop) while a file is being
-//! decrypted, and an attacker with root or kernel access to the running host
-//! can still read it. See fork/worker/README.md.
+// Guarded, locked memory for the worker's secrets.
+//
+// Every secret the worker holds for longer than one function call (its
+// X25519 private key, the fileKeys it was sent) lives in a [`SecretRegion`]:
+//
+// - its own pages, between two no-access guard pages, so an overrun faults
+//   instead of reading or writing a neighbour;
+// - locked in RAM (`mlock` / `VirtualLock`), so it never reaches swap or the
+//   pagefile. If locking fails the allocation fails: there is no unlocked
+//   fallback;
+// - on Linux, backed by `memfd_secret(2)` when the kernel offers it, which
+//   also removes the pages from the kernel's direct map;
+// - excluded from core dumps (`MADV_DONTDUMP`) and, for private mappings,
+//   from forked children (`MADV_WIPEONFORK`);
+// - no-access whenever no job is reading it (on Windows also encrypted with
+//   `CryptProtectMemory`);
+// - zeroized before it is unlocked and unmapped.
+//
+// What it cannot cover: a key is briefly copied onto the stack (as
+// `ente_core::crypto::Key`, which zeroizes on drop) while a file is being
+// decrypted, and an attacker with root or kernel access to the running host
+// can still read it. See fork/worker/README.md.
 
 #![allow(unsafe_code, reason = "OS memory APIs")]
 
@@ -59,12 +59,12 @@ pub enum Error {
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-/// How the pages of a region are backed.
+// How the pages of a region are backed.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Backing {
-    /// Linux `memfd_secret`: locked, and unmapped from the kernel direct map.
+    // Linux `memfd_secret`: locked, and unmapped from the kernel direct map.
     MemfdSecret,
-    /// Anonymous pages locked with `mlock` / `VirtualLock`.
+    // Anonymous pages locked with `mlock` / `VirtualLock`.
     Locked,
 }
 
@@ -75,17 +75,17 @@ enum Access {
     ReadWrite,
 }
 
-/// Options for new regions, from `[memory]` in worker.toml.
+// Options for new regions, from `[memory]` in worker.toml.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Options {
-    /// Fail instead of falling back to `mlock` when `memfd_secret` is missing.
+    // Fail instead of falling back to `mlock` when `memfd_secret` is missing.
     pub require_memfd_secret: bool,
-    /// Use plain `mlock` even where `memfd_secret` exists (tests).
+    // Use plain `mlock` even where `memfd_secret` exists (tests).
     #[doc(hidden)]
     pub skip_memfd_secret: bool,
 }
 
-/// One guarded, locked allocation. Not `Sync`: wrap it in a lock to share.
+// One guarded, locked allocation. Not `Sync`: wrap it in a lock to share.
 pub struct SecretRegion {
     raw: sys::Raw,
     len: usize,
@@ -96,7 +96,7 @@ pub struct SecretRegion {
 unsafe impl Send for SecretRegion {}
 
 impl SecretRegion {
-    /// Allocates at least `len` bytes, zeroed, locked and no-access.
+    // Allocates at least `len` bytes, zeroed, locked and no-access.
     pub fn new(len: usize, options: Options) -> Result<Self> {
         let raw = sys::alloc(len.max(1), options)?;
         let mut region = Self { raw, len };
@@ -116,7 +116,7 @@ impl SecretRegion {
         self.raw.backing
     }
 
-    /// Runs `f` with the region readable, then makes it no-access again.
+    // Runs `f` with the region readable, then makes it no-access again.
     pub fn with<R>(&mut self, f: impl FnOnce(&[u8]) -> R) -> Result<R> {
         self.set(Access::Read)?;
         // SAFETY: the mapping is live, readable, and at least `len` long.
@@ -126,7 +126,7 @@ impl SecretRegion {
         Ok(out)
     }
 
-    /// Runs `f` with the region writable, then makes it no-access again.
+    // Runs `f` with the region writable, then makes it no-access again.
     pub fn with_mut<R>(&mut self, f: impl FnOnce(&mut [u8]) -> R) -> Result<R> {
         self.set(Access::ReadWrite)?;
         // SAFETY: the mapping is live, writable, at least `len` long, and
@@ -155,11 +155,11 @@ impl Drop for SecretRegion {
     }
 }
 
-/// A fixed number of 32 byte key slots in one [`SecretRegion`].
-///
-/// Keys go in by copy (the source is zeroized) and are only ever lent out
-/// inside a closure, as an `ente_core` [`Key`](ente_core::crypto::Key) that
-/// zeroizes itself on drop.
+// A fixed number of 32 byte key slots in one [`SecretRegion`].
+//
+// Keys go in by copy (the source is zeroized) and are only ever lent out
+// inside a closure, as an `ente_core` [`Key`](ente_core::crypto::Key) that
+// zeroizes itself on drop.
 pub struct KeySlab {
     inner: Mutex<SlabInner>,
     capacity: usize,
@@ -172,8 +172,8 @@ struct SlabInner {
 
 pub const KEY_BYTES: usize = 32;
 
-/// A handle to one slot. Free it with [`KeySlab::remove`]; dropping the
-/// slab wipes every slot anyway.
+// A handle to one slot. Free it with [`KeySlab::remove`]; dropping the
+// slab wipes every slot anyway.
 #[derive(Debug, PartialEq, Eq, Hash)]
 pub struct Slot(usize);
 
@@ -201,8 +201,8 @@ impl KeySlab {
         self.lock().used.iter().filter(|u| **u).count()
     }
 
-    /// Copies `secret` into a free slot and zeroizes `secret`, whether or
-    /// not that succeeds.
+    // Copies `secret` into a free slot and zeroizes `secret`, whether or
+    // not that succeeds.
     pub fn insert(&self, secret: &mut [u8]) -> Result<Slot> {
         let result = self.insert_inner(secret);
         secret.zeroize();
@@ -229,8 +229,8 @@ impl KeySlab {
         Ok(Slot(index))
     }
 
-    /// Lends the key in `slot` to `f`. The copy `f` sees is zeroized when
-    /// `f` returns.
+    // Lends the key in `slot` to `f`. The copy `f` sees is zeroized when
+    // `f` returns.
     pub fn with_key<R>(
         &self,
         slot: &Slot,
@@ -246,7 +246,7 @@ impl KeySlab {
         })
     }
 
-    /// Wipes and frees a slot.
+    // Wipes and frees a slot.
     pub fn remove(&self, slot: Slot) -> Result<()> {
         let mut inner = self.lock();
         inner.region.with_mut(|bytes| {
@@ -265,7 +265,7 @@ impl KeySlab {
     }
 }
 
-/// Whether this kernel offers `memfd_secret` (always false off Linux).
+// Whether this kernel offers `memfd_secret` (always false off Linux).
 pub fn memfd_secret_available() -> std::result::Result<(), std::io::Error> {
     sys::probe_memfd_secret()
 }

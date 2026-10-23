@@ -1,4 +1,4 @@
-//! `mmap` + `mlock` regions with guard pages; `memfd_secret` on Linux.
+// `mmap` + `mlock` regions with guard pages; `memfd_secret` on Linux.
 
 use std::io;
 use std::ptr;
@@ -6,10 +6,10 @@ use std::ptr;
 use super::{Access, Backing, Error, Options, Result};
 
 pub struct Raw {
-    /// Start of the whole mapping, guard pages included.
+    // Start of the whole mapping, guard pages included.
     base: *mut u8,
     total: usize,
-    /// Start and length of the usable, page-rounded middle.
+    // Start and length of the usable, page-rounded middle.
     pub data: *mut u8,
     pub data_len: usize,
     pub backing: Backing,
