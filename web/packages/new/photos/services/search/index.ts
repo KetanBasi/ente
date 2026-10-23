@@ -7,6 +7,7 @@ import type { EnteFile } from "ente-media/file";
 import { FileType } from "ente-media/file-type";
 import { ensureMasterKeyFromSession } from "ente-new/photos/services/account-keys";
 import i18n, { t } from "i18next";
+import { homeAISearchSuggestions } from "../fork"; // fork
 import { clipMatches, isMLEnabled, isMLSupported } from "../ml";
 import type { NamedPerson } from "../ml/people";
 import type {
@@ -79,13 +80,14 @@ const suggestionsForString = async (searchString: string) => {
     if (s.length == 0) return [];
 
     // CLIP uses the ML worker, so run it alongside the search worker.
-    const [clip, [restPre, restPost]] = await Promise.all([
+    const [clip, [restPre, restPost], homeAI] = await Promise.all([
         clipSuggestion(s, searchString).then((s) => s ?? []),
         worker().then((w) =>
             w.suggestionsForString(s, searchString, localizedSearchData()),
         ),
+        homeAISearchSuggestions(s, searchString), // fork
     ]);
-    return [restPre, clip, restPost].flat();
+    return [restPre, clip, homeAI, restPost].flat();
 };
 
 const clipSuggestion = async (

@@ -12,6 +12,7 @@ import { clearFilesDB } from "ente-gallery/services/files-db";
 import { resetUploadState } from "ente-gallery/services/upload";
 import { resetVideoState } from "ente-gallery/services/video";
 import { logoutAppLock } from "ente-new/photos/services/app-lock";
+import { logoutHomeAI } from "ente-new/photos/services/fork"; // fork
 import { logoutML, terminateMLWorker } from "ente-new/photos/services/ml";
 import { logoutSearch } from "ente-new/photos/services/search";
 import { logoutSettings } from "ente-new/photos/services/settings";
@@ -120,6 +121,13 @@ export const photosLogout = async () => {
         logoutFileViewerDataSource();
     } catch (e) {
         ignoreError("File viewer", e);
+    }
+
+    // fork: Home AI results, worker confirmation and settings.
+    try {
+        await logoutHomeAI();
+    } catch (e) {
+        ignoreError("Home AI", e);
     }
 
     // Desktop

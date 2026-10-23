@@ -29,6 +29,7 @@ import {
 } from "@/components/collections/EditAlbumDetailsDialog";
 import { GalleryBarAndListHeader } from "@/components/collections/GalleryBarAndListHeader";
 import { slideshowFiles } from "@/components/collections/album-slideshow";
+import { HomeAIReviewHost } from "@/components/fork/HomeAIReview"; // fork
 import {
     GalleryEmptyState,
     PeopleConsentDialog,
@@ -2460,6 +2461,8 @@ const Page: React.FC = () => {
                 }
             </Sidebar>
             <WhatsNew {...whatsNewVisibilityProps} />
+            {/* fork: Home AI review screen. */}
+            <HomeAIReviewHost onRemoteFilesPull={remoteFilesPull} />
             <PeopleConsentDialog
                 {...peopleConsentVisibilityProps}
                 onClose={() => {

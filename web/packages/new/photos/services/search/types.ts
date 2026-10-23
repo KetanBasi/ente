@@ -59,6 +59,8 @@ export type SearchSuggestion = { label: string } & (
     | { type: "clip"; clipScoreForFileID: Map<number, number> }
     | { type: "person"; person: Person }
     | { type: "sidebarAction"; actionID: SidebarActionID; path: string[] }
+    // fork: Home AI worker results (entities, devices, OCR text).
+    | { type: "homeAI"; kind: string; fileIDs: number[] }
 );
 
 export interface SearchOption {
