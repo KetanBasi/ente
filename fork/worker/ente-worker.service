@@ -1,0 +1,41 @@
+# systemd unit for the home AI worker. Install with:
+#   sudo install -m 0644 ente-worker.service /etc/systemd/system/
+#   sudo systemctl enable --now ente-worker
+# See fork/worker/README.md for creating the encrypted credential.
+
+[Unit]
+Description=Ente fork home AI worker
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/ente-worker run -c /etc/ente-worker/worker.toml
+DynamicUser=yes
+# TPM-sealed (or host-key-sealed) private key, decrypted by systemd into a
+# non-swappable ramfs under $CREDENTIALS_DIRECTORY at start.
+LoadCredentialEncrypted=ente-worker-key:/etc/credstore.encrypted/ente-worker-key
+# Room for the locked key pages; raise with runtime.batch_size.
+LimitMEMLOCK=64M
+LimitCORE=0
+# Only the worker is killed if it runs out of memory, not the whole host or
+# WSL2 VM.
+MemoryMax=4G
+MemorySwapMax=0
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+SystemCallArchitectures=native
+CapabilityBoundingSet=
+RestartSec=30
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

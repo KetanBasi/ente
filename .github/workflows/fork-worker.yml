@@ -1,0 +1,76 @@
+name: "Fork: Worker"
+
+# The home AI worker (fork/worker): format, lint and tests on Linux, where
+# it runs today under WSL2, and on Windows, for the native worker.
+
+on:
+    pull_request:
+        paths:
+            - ".github/workflows/fork-worker.yml"
+            - "fork/worker/**"
+            - "rust/crates/core/**"
+            - "rust/crates/exif/**"
+            - "rust/crates/image/**"
+    push:
+        branches: [main]
+        paths:
+            - ".github/workflows/fork-worker.yml"
+            - "fork/worker/**"
+            - "rust/crates/core/**"
+            - "rust/crates/exif/**"
+            - "rust/crates/image/**"
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+concurrency:
+    group: fork-worker-${{ github.ref }}
+    cancel-in-progress: true
+
+env:
+    RUSTFLAGS: -D warnings
+
+jobs:
+    test:
+        name: Worker (${{ matrix.os }})
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [ubuntu-latest, windows-latest]
+        runs-on: ${{ matrix.os }}
+        timeout-minutes: 30
+        defaults:
+            run:
+                working-directory: fork/worker
+                shell: bash
+        steps:
+            - name: Checkout
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  persist-credentials: false
+
+            - name: Update Rust
+              run: rustup update stable --no-self-update && rustup default stable && rustup component add clippy rustfmt
+
+            - name: Setup Rust cache
+              uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+              with:
+                  workspaces: fork/worker
+                  shared-key: fork-worker
+
+            - name: Format
+              if: runner.os == 'Linux'
+              run: cargo fmt --check
+
+            - name: Clippy
+              run: cargo clippy --locked --all-targets
+
+            - name: Host protections
+              if: runner.os == 'Linux'
+              run: |
+                  ulimit -l
+                  cargo run --locked --quiet -- doctor -c worker.example.toml
+
+            - name: Test
+              run: cargo test --locked
