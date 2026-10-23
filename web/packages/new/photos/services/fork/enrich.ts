@@ -4,10 +4,10 @@
 
 import { z } from "zod";
 
-/** The top-level `mldata` key the worker owns. */
+// The top-level `mldata` key the worker owns.
 const enrichMLDataKey = "x_enrich";
 
-/** The private magicMetadata key where this client records review choices. */
+// The private magicMetadata key where this client records review choices.
 export const reviewMagicMetadataKey = "x_review";
 
 const Score = z.number().min(0).max(1);
@@ -69,7 +69,7 @@ const XEnrich = z.object({
 
 export type XEnrich = z.infer<typeof XEnrich>;
 
-/**
+/*
  * Return the worker's results from a decrypted `mldata` record, or undefined
  * if it has none or they are of an unknown version.
  */
@@ -88,7 +88,7 @@ const ReviewChoices = z.object({
 
 export type ReviewChoices = z.infer<typeof ReviewChoices>;
 
-/** The review choices stored in a file's (decrypted) private magicMetadata. */
+// The review choices stored in a file's (decrypted) private magicMetadata.
 export const reviewChoicesFromMagicMetadata = (
     data: Record<string, unknown> | undefined,
 ): ReviewChoices => {

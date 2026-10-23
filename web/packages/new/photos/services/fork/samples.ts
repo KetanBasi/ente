@@ -15,7 +15,7 @@ const entities: EnrichEntity[][] = [
     [{ kind: "movie", name: "Spirited Away", score: 0.76 }],
 ];
 
-/**
+/*
  * Give roughly every third file some made-up results. The choice is a pure
  * function of the file ID, so loading samples twice gives the same result.
  */

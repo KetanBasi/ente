@@ -1,7 +1,7 @@
 // fork: display names for what the home AI worker reports. English only for
 // now; the fork does not add strings to upstream's translation files.
 
-/** The search bar's label for a worker entity kind. */
+// The search bar's label for a worker entity kind.
 export const homeAIKindLabel = (kind: string) => {
     switch (kind) {
         case "repo":
@@ -27,7 +27,7 @@ export const homeAIKindLabel = (kind: string) => {
     }
 };
 
-/** A short label for a cleanup reason or a PII kind. */
+// A short label for a cleanup reason or a PII kind.
 export const homeAIReasonLabel = (reason: string) => {
     switch (reason) {
         case "duplicate":

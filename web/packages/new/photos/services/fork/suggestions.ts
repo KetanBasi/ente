@@ -9,15 +9,15 @@ import {
     type XEnrich,
 } from "./enrich";
 
-/** Per-device thresholds and switches, set in the Home AI settings. */
+// Per-device thresholds and switches, set in the Home AI settings.
 export interface HomeAISettings {
-    /** Release keys of files in hidden albums too. */
+    // Release keys of files in hidden albums too.
     includeHidden: boolean;
-    /** Suggest an album only when the worker is at least this sure. */
+    // Suggest an album only when the worker is at least this sure.
     minAlbumScore: number;
     minCleanupScore: number;
     minPIIScore: number;
-    /** Offer worker entities and text in the search bar. */
+    // Offer worker entities and text in the search bar.
     search: boolean;
 }
 
@@ -30,18 +30,18 @@ export const defaultHomeAISettings: HomeAISettings = {
 };
 
 export interface AlbumSuggestion {
-    /** Stable within one computation: the worker's group, else the name. */
+    // Stable within one computation: the worker's group, else the name.
     id: string;
     name: string;
     files: EnteFile[];
-    /** The user's own album of the same name, if one exists. */
+    // The user's own album of the same name, if one exists.
     existingCollectionID: number | undefined;
 }
 
 export interface ScoredFile {
     file: EnteFile;
     score: number;
-    /** Worker reasons (cleanup) or PII kinds. */
+    // Worker reasons (cleanup) or PII kinds.
     labels: string[];
 }
 
@@ -51,7 +51,7 @@ export interface HomeAISuggestions {
     hide: ScoredFile[];
 }
 
-/** An album must collect at least this many files to be suggested. */
+// An album must collect at least this many files to be suggested.
 const minAlbumSize = 2;
 
 export const reviewChoices = (file: EnteFile): ReviewChoices =>
@@ -59,7 +59,7 @@ export const reviewChoices = (file: EnteFile): ReviewChoices =>
         file.magicMetadata?.data as Record<string, unknown> | undefined,
     );
 
-/**
+/*
  * @param files The user's own files, unique by ID, without hidden files.
  * @param enrichByFileID The worker results we have.
  * @param albums The user's own albums, to find ones that already exist and
@@ -143,17 +143,17 @@ export const computeSuggestions = (
 };
 
 export interface EntityMatch {
-    /** What the search bar shows, e.g. "ente-io/ente". */
+    // What the search bar shows, e.g. "ente-io/ente".
     label: string;
-    /** The worker's entity kind, or "text" for a match in the OCR text. */
+    // The worker's entity kind, or "text" for a match in the OCR text.
     kind: string;
     fileIDs: number[];
 }
 
-/** Matches are capped so a short query does not flood the search bar. */
+// Matches are capped so a short query does not flood the search bar.
 const maxEntityMatches = 8;
 
-/**
+/*
  * Find worker entities, device names and OCR text that match a search
  * string. Entities come first, then devices, then one "text" match.
  *

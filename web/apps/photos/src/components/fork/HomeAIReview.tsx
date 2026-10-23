@@ -55,11 +55,11 @@ import {
 } from "./home-ai-review-store";
 
 interface HomeAIReviewHostProps {
-    /** Pull remote changes so the gallery and the suggestions update. */
+    // Pull remote changes so the gallery and the suggestions update.
     onRemoteFilesPull: () => Promise<void>;
 }
 
-/** Mounted once in the gallery; shows the review screen when asked. */
+// Mounted once in the gallery; shows the review screen when asked.
 export const HomeAIReviewHost: React.FC<HomeAIReviewHostProps> = ({
     onRemoteFilesPull,
 }) => {
@@ -78,7 +78,7 @@ export const HomeAIReviewHost: React.FC<HomeAIReviewHostProps> = ({
 
 type ReviewTab = "albums" | "cleanup" | "hide";
 
-/** Long lists are reviewed in pages of this size, best matches first. */
+// Long lists are reviewed in pages of this size, best matches first.
 const pageSize = 120;
 
 const HomeAIReview: React.FC<

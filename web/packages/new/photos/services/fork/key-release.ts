@@ -19,16 +19,16 @@ import {
     type WorkerStatus,
 } from "./worker-api";
 
-/** What this device remembers about the worker the user confirmed here. */
+// What this device remembers about the worker the user confirmed here.
 const DeviceWorker = z.object({
     publicKey: z.string(),
     name: z.string(),
-    /** The fingerprint this client computed and the user confirmed. */
+    // The fingerprint this client computed and the user confirmed.
     fingerprint: z.string(),
     confirmedAt: z.number(),
-    /** The token the released keys belong to; a new one restarts the log. */
+    // The token the released keys belong to; a new one restarts the log.
     tokenID: z.string().optional(),
-    /** Last audit log row folded into the released set. */
+    // Last audit log row folded into the released set.
     auditCursor: z.number().default(0),
 });
 
@@ -37,10 +37,10 @@ export type DeviceWorker = z.infer<typeof DeviceWorker>;
 const deviceWorkerKey = "forkHomeAIDeviceWorker";
 const releasedKey = "forkHomeAIReleasedFileIDs";
 
-/** Keys sealed per sync, so the first run on a big library is spread out. */
+// Keys sealed per sync, so the first run on a big library is spread out.
 const maxReleasePerSync = 5000;
 
-/**
+/*
  * Hex SHA-256 of the raw public key, the same value museum shows. The client
  * computes it itself so that a tampered server response cannot fake it.
  */
@@ -69,7 +69,7 @@ export const saveDeviceWorker = (key: WorkerKey, fingerprint: string) =>
         auditCursor: 0,
     } satisfies DeviceWorker);
 
-/** Forget the worker on this device. Keys stop being released from here. */
+// Forget the worker on this device. Keys stop being released from here.
 export const clearDeviceWorker = async () => {
     await removeKV(deviceWorkerKey);
     await removeKV(releasedKey);
@@ -87,11 +87,11 @@ const saveReleasedFileIDs = (ids: Set<number>) => setKV(releasedKey, [...ids]);
 
 export type KeyReleaseResult =
     | { state: "off" }
-    /** The worker was disabled elsewhere, or its key left the allowlist. */
+    // The worker was disabled elsewhere, or its key left the allowlist.
     | { state: "stopped"; reason: string }
     | { state: "done"; released: number; remaining: number };
 
-/**
+/*
  * Release the keys of files the worker has not been sent yet.
  *
  * @param files The user's own files, unique by ID. Callers leave out hidden
@@ -178,7 +178,7 @@ export const releaseKeysIfNeeded = async (
     };
 };
 
-/** Statuses of this account's enabled workers, or undefined if the server has no Home AI. */
+// Statuses of this account's enabled workers, or undefined if the server has no Home AI.
 export const fetchWorkerStatusIfAvailable = async () => {
     try {
         return await fetchWorkerStatus();

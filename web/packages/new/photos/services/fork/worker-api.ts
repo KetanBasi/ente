@@ -37,16 +37,16 @@ const AuditItem = z.object({
 
 export type AuditItem = z.infer<typeof AuditItem>;
 
-/** One fileKey sealed to the worker with crypto_box_seal, base64. */
+// One fileKey sealed to the worker with crypto_box_seal, base64.
 export interface SealedFileKey {
     fileID: number;
     sealedFileKey: string;
 }
 
-/** Museum caps one inbox upload at this many files. */
+// Museum caps one inbox upload at this many files.
 export const maxInboxBatch = 1000;
 
-/**
+/*
  * Museums without the fork patch answer 404 here, which callers treat as
  * "Home AI is not available on this server".
  */
@@ -73,7 +73,7 @@ export const fetchWorkerStatus = async (): Promise<WorkerStatus[]> => {
     );
 };
 
-/** Enable the worker for this account, or rotate its token. */
+// Enable the worker for this account, or rotate its token.
 export const enableWorker = async (workerPublicKey: string) => {
     const res = await fetch(await apiURL("/fork/worker/token"), {
         method: "POST",
@@ -84,7 +84,7 @@ export const enableWorker = async (workerPublicKey: string) => {
     return WorkerStatus.parse(await res.json());
 };
 
-/**
+/*
  * Kill switch: revokes every worker token of this account and drops the
  * sealed keys the worker has not read yet.
  */
@@ -96,7 +96,7 @@ export const disableWorkers = async () =>
         }),
     );
 
-/** Upload at most {@link maxInboxBatch} sealed keys. */
+// Upload at most {@link maxInboxBatch} sealed keys.
 export const releaseKeys = async (
     workerPublicKey: string,
     keys: SealedFileKey[],
@@ -110,7 +110,7 @@ export const releaseKeys = async (
     return z.object({ added: z.number() }).parse(await res.json()).added;
 };
 
-/** One page of the release log, oldest first. It never carries key bytes. */
+// One page of the release log, oldest first. It never carries key bytes.
 export const fetchAuditLog = async (
     sinceID: number,
     limit = 1000,

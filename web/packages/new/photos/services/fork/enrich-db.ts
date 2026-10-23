@@ -13,7 +13,7 @@ import { enrichFromMLData, type XEnrich } from "./enrich";
 interface EnrichRecord {
     fileID: number;
     enrich: XEnrich;
-    /** Made up locally by "preview with sample data", never uploaded. */
+    // Made up locally by "preview with sample data", never uploaded.
     sample?: boolean;
 }
 
@@ -43,10 +43,10 @@ const openHomeAIDB = () =>
 
 const homeAIDB = () => (_db ??= openHomeAIDB());
 
-/** Status-diff cursor for `mldata`, separate from Ente's own ML sync. */
+// Status-diff cursor for `mldata`, separate from Ente's own ML sync.
 const cursorKey = "forkHomeAIEnrichCursor";
 
-/** Museum caps one batch `mldata` fetch at this many files. */
+// Museum caps one batch `mldata` fetch at this many files.
 const fetchBatchSize = 200;
 
 export const savedEnrich = async (): Promise<Map<number, XEnrich>> => {
@@ -57,7 +57,7 @@ export const savedEnrich = async (): Promise<Map<number, XEnrich>> => {
 export const hasSampleEnrich = async () =>
     (await (await homeAIDB()).getAll("enrich")).some((r) => r.sample);
 
-/**
+/*
  * Fetch `mldata` that changed since the last sync and keep its `x_enrich`.
  *
  * @param filesByID The user's own files. Records of other files are skipped:

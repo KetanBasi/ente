@@ -53,7 +53,7 @@ const saveReviewChoices = (files: EnteFile[], choices: ReviewChoices) =>
         ),
     );
 
-/**
+/*
  * Put the files into the suggested album: the user's existing album of that
  * name, else a new one.
  */
@@ -75,15 +75,15 @@ export const acceptAlbumSuggestion = async (
 export const rejectAlbumSuggestion = (files: EnteFile[]) =>
     saveReviewChoices(files, { album: "rejected" });
 
-/** Move to trash. Trash keeps them for 30 days, as for any delete. */
+// Move to trash. Trash keeps them for 30 days, as for any delete.
 export const trashCleanupSuggestions = (files: EnteFile[]) =>
     moveToTrash(files);
 
-/** Keep: also the label a later learnable cleanup model trains on. */
+// Keep: also the label a later learnable cleanup model trains on.
 export const keepCleanupSuggestions = (files: EnteFile[]) =>
     saveReviewChoices(files, { cleanup: "keep" });
 
-/** Move to Hidden, which sits behind the device lock. */
+// Move to Hidden, which sits behind the device lock.
 export const hideSuggestedFiles = async (files: EnteFile[]) => {
     await saveReviewChoices(files, { pii: "hidden" });
     // Hide every copy, as the gallery does, so none stays in another album.

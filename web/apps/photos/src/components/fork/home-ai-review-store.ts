@@ -9,7 +9,7 @@ const setOpen = (open: boolean) => {
     _listeners.forEach((l) => l());
 };
 
-/** Open the review screen from anywhere, e.g. the settings drawer. */
+// Open the review screen from anywhere, e.g. the settings drawer.
 export const showHomeAIReview = () => setOpen(true);
 
 export const hideHomeAIReview = () => setOpen(false);

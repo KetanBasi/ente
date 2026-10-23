@@ -49,16 +49,16 @@ import {
 } from "./worker-api";
 
 export interface HomeAIState {
-    /** False when the server does not have the fork's worker patch. */
+    // False when the server does not have the fork's worker patch.
     available: boolean;
-    /** The server's worker allowlist. */
+    // The server's worker allowlist.
     keys: WorkerKey[];
-    /** Workers enabled for this account, from any device. */
+    // Workers enabled for this account, from any device.
     workers: WorkerStatus[];
-    /** The worker this device releases keys to, if the user confirmed one here. */
+    // The worker this device releases keys to, if the user confirmed one here.
     device: DeviceWorker | undefined;
     settings: HomeAISettings;
-    /** Files with worker (or sample) results on this device. */
+    // Files with worker (or sample) results on this device.
     resultCount: number;
     hasSamples: boolean;
     lastRelease: KeyReleaseResult | undefined;
@@ -67,7 +67,7 @@ export interface HomeAIState {
 let _state: HomeAIState | undefined;
 const _listeners = new Set<() => void>();
 
-/** Cached results, for search. Cleared whenever the store changes. */
+// Cached results, for search. Cleared whenever the store changes.
 let _enrich: Map<number, XEnrich> | undefined;
 
 let _syncPromise: Promise<void> | undefined;
@@ -110,7 +110,7 @@ export const updateHomeAISettings = async (
 
 const enrichMap = async () => (_enrich ??= await savedEnrich());
 
-/**
+/*
  * Refresh {@link homeAISnapshot} from the server and the local store.
  *
  * @param workers Statuses already fetched by the caller, if any.
@@ -134,7 +134,7 @@ export const pullHomeAIState = async (
     });
 };
 
-/**
+/*
  * Confirm a worker on this device and start releasing keys to it. The caller
  * must have shown the user {@link workerFingerprint} of the key and had them
  * compare it with the fingerprint the worker prints.
@@ -152,13 +152,13 @@ export const enableHomeAI = async (key: WorkerKey, fingerprint: string) => {
     void homeAISync();
 };
 
-/** Stop releasing keys from this device. The worker stays enabled. */
+// Stop releasing keys from this device. The worker stays enabled.
 export const stopHomeAIOnThisDevice = async () => {
     await clearDeviceWorker();
     await pullHomeAIState();
 };
 
-/**
+/*
  * Kill switch: revoke the worker's access for the whole account and drop the
  * keys it has not read yet.
  */
@@ -176,7 +176,7 @@ const userFiles = async (includeHidden: boolean): Promise<EnteFile[]> => {
     return uniqueFilesByID(files.filter((f) => f.ownerID == userID));
 };
 
-/**
+/*
  * Release new keys and fetch new results. Called after each remote pull; a
  * call while one is running joins it.
  */
@@ -209,7 +209,7 @@ const sync = async () => {
     }
 };
 
-/** The suggestions the review screen shows, from what this device has. */
+// The suggestions the review screen shows, from what this device has.
 export const homeAISuggestions = async (): Promise<HomeAISuggestions> => {
     const userID = ensureLocalUser().id;
     const files = await userFiles(false);
@@ -245,7 +245,7 @@ export const clearHomeAISamples = async () => {
     await pullHomeAIState();
 };
 
-/** Search bar suggestions from worker entities, devices and OCR text. */
+// Search bar suggestions from worker entities, devices and OCR text.
 export const homeAISearchSuggestions = async (
     s: string,
     searchString: string,
