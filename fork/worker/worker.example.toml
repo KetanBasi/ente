@@ -1,0 +1,69 @@
+# Home AI worker configuration. Copy to /etc/ente-worker/worker.toml.
+# Unknown keys are an error, so typos fail at start instead of being ignored.
+
+# Deployment preset: "cpu-only" (default), "small-gpu", "home-16gb",
+# "large-server". This build is the CPU-only worker: the GPU presets are
+# refused until the GPU phase lands. Settings below override the preset.
+profile = "cpu-only"
+
+[server]
+# Museum's API endpoint, as the worker reaches it (e.g. over Tailscale).
+endpoint = "http://localhost:8080"
+# Optional: base64 X25519 public key from `ente-worker keygen`. The worker
+# refuses to start if its private key does not match.
+# public_key = "..."
+timeout_secs = 60
+
+[identity]
+# Where the worker's X25519 private key comes from. It is never read from a
+# plain file.
+#   "systemd-creds": $CREDENTIALS_DIRECTORY/<credential>, from
+#                    LoadCredentialEncrypted= (TPM-sealed on disk).
+#   "stdin":         base64 on stdin, piped from a secret store.
+source = "systemd-creds"
+credential = "ente-worker-key"
+
+[runtime]
+device = "cpu"         # "cpu" now; "cuda" in the GPU phase
+precision = "fp32"     # cpu: "fp32" or "int8"; gpu adds "bf16", "fp16", "fp8"
+batch_size = 1         # fileKeys held (in locked memory) at once, 1..=1000
+concurrency = 1        # files analysed in parallel, at most batch_size
+vram_budget_mb = 0     # hard VRAM cap for model stages; must be 0 on cpu
+poll_interval_secs = 30
+max_original_mb = 64   # larger originals are skipped; thumbnail stages still run
+
+[stages]
+# CPU stages (this build).
+device = true      # camera from EXIF; screenshot device from pixel size
+hashes = true      # dHash + pHash of the thumbnail, for duplicates
+blur = true        # Laplacian variance of the thumbnail
+pii_regex = true   # regex + checksums on title, caption and EXIF text
+# Model stages (GPU phase). Must stay false in this build.
+ocr = false
+clip = false
+faces = false
+laya = false
+gliner_pii = false
+
+[models]
+# Paths for the model stages, used from the GPU phase on.
+# ocr = "/var/lib/ente-worker/models/ppocrv5"
+# laya = "/var/lib/ente-worker/models/laya"
+# gliner_pii = "/var/lib/ente-worker/models/gliner2-privacy-filter-PII-multi"
+
+[memory]
+# Refuse to start unless Linux memfd_secret is available (it is not on
+# Windows, and may not be in the WSL2 kernel). mlock is always required.
+require_memfd_secret = false
+
+[mldata]
+# Only add x_enrich to mldata records that already have Ente's face and
+# clip indexes at these versions or newer. Files without them stay in the
+# inbox and are retried, so stock mobile never overwrites the worker.
+require_face_clip = true
+min_face_version = 1
+min_clip_version = 1
+
+[pii]
+# Which regex detectors run. Matched values are never stored, only kinds.
+kinds = ["card", "iban", "mrz", "nik", "email", "phone"]
