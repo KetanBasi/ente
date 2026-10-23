@@ -1,5 +1,5 @@
-//! One full poll against a mock museum: pairing, inbox, decrypt, stages,
-//! mldata merge and consume.
+// One full poll against a mock museum: pairing, inbox, decrypt, stages,
+// mldata merge and consume.
 
 #![allow(clippy::unwrap_used, reason = "test helpers")]
 use std::io::Read;

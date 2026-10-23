@@ -1,5 +1,5 @@
-//! One poll of the worker: pairings, inbox, decrypt, CPU stages, mldata
-//! merge, consume.
+// One poll of the worker: pairings, inbox, decrypt, CPU stages, mldata
+// merge, consume.
 
 use std::io::Cursor;
 use std::sync::Arc;
@@ -19,7 +19,7 @@ use crate::mldata::{self, Record};
 use crate::secure_mem::{self, KeySlab, Slot};
 use crate::stages;
 
-/// Ente's metadata `fileType` for still images (0) and live photos (2).
+// Ente's metadata `fileType` for still images (0) and live photos (2).
 const FILE_TYPE_IMAGE: i64 = 0;
 const MAX_THUMBNAIL_BYTES: u64 = 16 * 1024 * 1024;
 
@@ -97,7 +97,7 @@ impl Worker {
         })
     }
 
-    /// Processes every user's inbox once.
+    // Processes every user's inbox once.
     pub async fn run_once(&self) -> Result<Summary> {
         let mut total = Summary::default();
         for pairing in self.client.pairings(self.identity.public_key_b64()).await? {
@@ -318,8 +318,8 @@ impl Worker {
         }
     }
 
-    /// The decrypted original, for EXIF, when it is a still image under the
-    /// size cap and a stage needs it.
+    // The decrypted original, for EXIF, when it is a still image under the
+    // size cap and a stage needs it.
     async fn original(
         &self,
         wc: &WorkerClient,
@@ -386,7 +386,7 @@ fn dims(m: &Map<String, Value>, w: &str, h: &str) -> Option<(u32, u32)> {
     Some((g(w)?, g(h)?))
 }
 
-/// Runs the CPU stages on decrypted inputs. Pure apart from the clock.
+// Runs the CPU stages on decrypted inputs. Pure apart from the clock.
 pub fn analyse(
     stages_cfg: &crate::config::Stages,
     kinds: &[crate::config::PiiKind],

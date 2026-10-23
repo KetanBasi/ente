@@ -1,11 +1,11 @@
-//! Perceptual hashes of the thumbnail, for near-duplicate grouping:
-//! a 64-bit difference hash and a 64-bit DCT hash. Hamming distance up to
-//! about 10 means "probably the same picture".
+// Perceptual hashes of the thumbnail, for near-duplicate grouping:
+// a 64-bit difference hash and a 64-bit DCT hash. Hamming distance up to
+// about 10 means "probably the same picture".
 
 use ente_image::DecodedImage;
 
-/// Grayscale (BT.601) downscale by area average so the longest side is at
-/// most `max_side`. Returns `(width, height, pixels)`.
+// Grayscale (BT.601) downscale by area average so the longest side is at
+// most `max_side`. Returns `(width, height, pixels)`.
 pub(crate) fn gray_bounded(img: &DecodedImage, max_side: usize) -> Option<(usize, usize, Vec<u8>)> {
     let w = img.dimensions.width as usize;
     let h = img.dimensions.height as usize;
@@ -32,7 +32,7 @@ pub(crate) fn gray_bounded(img: &DecodedImage, max_side: usize) -> Option<(usize
     Some((ow, oh, out))
 }
 
-/// Area-average resize of a gray image to exactly `tw` x `th`.
+// Area-average resize of a gray image to exactly `tw` x `th`.
 fn resize_gray(src: &[u8], w: usize, h: usize, tw: usize, th: usize) -> Vec<f64> {
     let mut out = vec![0.0; tw * th];
     for ty in 0..th {
@@ -60,7 +60,7 @@ fn resize_gray(src: &[u8], w: usize, h: usize, tw: usize, th: usize) -> Vec<f64>
 }
 
 pub struct Hashes {
-    /// 16 lowercase hex digits each.
+    // 16 lowercase hex digits each.
     pub dhash: String,
     pub phash: String,
 }

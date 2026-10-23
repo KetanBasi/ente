@@ -6,19 +6,19 @@ name: "Fork: Worker"
 on:
     pull_request:
         paths:
+            - ".github/workflows/fork-worker.yml"
             - "fork/worker/**"
             - "rust/crates/core/**"
             - "rust/crates/exif/**"
             - "rust/crates/image/**"
-            - ".github/workflows/fork-worker.yml"
     push:
         branches: [main]
         paths:
+            - ".github/workflows/fork-worker.yml"
             - "fork/worker/**"
             - "rust/crates/core/**"
             - "rust/crates/exif/**"
             - "rust/crates/image/**"
-            - ".github/workflows/fork-worker.yml"
     workflow_dispatch:
 
 permissions:

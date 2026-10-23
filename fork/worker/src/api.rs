@@ -1,4 +1,4 @@
-//! Client for museum's fork worker routes (fork/docs/worker-api.md).
+// Client for museum's fork worker routes (fork/docs/worker-api.md).
 
 use std::time::Duration;
 
@@ -167,7 +167,7 @@ struct FileIds<'a> {
     file_ids: &'a [i64],
 }
 
-/// Unauthenticated client: pairing and presigned object downloads.
+// Unauthenticated client: pairing and presigned object downloads.
 #[derive(Clone)]
 pub struct Client {
     http: reqwest::Client,
@@ -202,7 +202,7 @@ impl Client {
         Ok(p.pairings)
     }
 
-    /// The worker routes for one user, with that user's worker token.
+    // The worker routes for one user, with that user's worker token.
     pub fn for_token(&self, token: Zeroizing<String>) -> Result<WorkerClient> {
         let mut value = HeaderValue::from_str(&token).map_err(|_| Error::Http {
             status: 0,
@@ -216,7 +216,7 @@ impl Client {
         })
     }
 
-    /// Downloads a presigned object URL (no Ente headers needed).
+    // Downloads a presigned object URL (no Ente headers needed).
     pub async fn download(&self, url: &str, max_bytes: u64) -> Result<Zeroizing<Vec<u8>>> {
         let path = "object";
         let mut resp = self
@@ -261,7 +261,7 @@ fn too_big(path: &str, max_bytes: u64) -> Error {
     }
 }
 
-/// The `/fork/worker-api` routes, authorised by one user's worker token.
+// The `/fork/worker-api` routes, authorised by one user's worker token.
 #[derive(Clone)]
 pub struct WorkerClient {
     base: Client,

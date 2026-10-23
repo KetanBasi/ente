@@ -1,16 +1,16 @@
-//! Process hardening at start-up, and the `doctor` report.
+// Process hardening at start-up, and the `doctor` report.
 
 #![allow(unsafe_code, reason = "prctl, setrlimit and Win32 process calls")]
 
 use std::fmt::Write as _;
 
-/// What the host offers, for the start-up log and `ente-worker doctor`.
+// What the host offers, for the start-up log and `ente-worker doctor`.
 #[derive(Debug)]
 pub struct Report {
     pub memfd_secret: Result<(), String>,
     pub dumpable_off: Result<(), String>,
     pub core_dumps_off: Result<(), String>,
-    /// Soft memlock limit in bytes after raising it (None = unlimited).
+    // Soft memlock limit in bytes after raising it (None = unlimited).
     pub memlock_limit: Option<u64>,
     pub wsl: bool,
     pub swap_active: Option<bool>,
@@ -82,8 +82,8 @@ impl Report {
     }
 }
 
-/// Applies every hardening step this OS supports and reports the result.
-/// `locked_bytes` is how much secret memory the worker will lock.
+// Applies every hardening step this OS supports and reports the result.
+// `locked_bytes` is how much secret memory the worker will lock.
 pub fn harden(locked_bytes: usize) -> Report {
     let mut report = Report {
         memfd_secret: crate::secure_mem::memfd_secret_available().map_err(|e| e.to_string()),
@@ -192,7 +192,7 @@ fn platform(report: &mut Report, locked_bytes: usize) {
     report.memlock_limit = ok.then_some(u64::try_from(min).unwrap_or(u64::MAX));
 }
 
-/// Logs the report: missing protections are warnings, not silence.
+// Logs the report: missing protections are warnings, not silence.
 pub fn log_report(report: &Report) {
     match &report.memfd_secret {
         Ok(()) => log::info!("secret memory: memfd_secret"),
