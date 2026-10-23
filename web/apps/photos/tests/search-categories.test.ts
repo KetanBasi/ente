@@ -27,6 +27,7 @@ const categoriesByType = {
     date: "photos",
     noLocation: "photos",
     clip: "photos",
+    homeAI: "photos", // fork
 } satisfies Record<SearchSuggestion["type"], Exclude<SearchCategory, "all">>;
 
 const sidebarOption = (actionID: SidebarActionID): SearchOption => ({

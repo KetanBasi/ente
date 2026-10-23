@@ -80,6 +80,8 @@ vi.mock("ente-new/photos/services/collection", () => ({
     unbindCollectionKeyOpener: vi.fn(),
 }));
 vi.mock("ente-new/photos/services/search", () => ({ logoutSearch: vi.fn() }));
+// fork: Home AI cleanup on logout.
+vi.mock("ente-new/photos/services/fork", () => ({ logoutHomeAI: vi.fn() }));
 vi.mock("ente-new/photos/services/settings", () => ({
     logoutSettings: vi.fn(),
 }));

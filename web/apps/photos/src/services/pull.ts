@@ -11,6 +11,7 @@ import {
     pullCollectionFiles,
     pullCollections,
 } from "ente-new/photos/services/collection";
+import { homeAISync } from "ente-new/photos/services/fork"; // fork
 import {
     isMLSupported,
     mlSync,
@@ -69,4 +70,6 @@ export const postPullFiles = async (source?: string) => {
     await Promise.all([searchDataSync(), videoProcessingSyncIfNeeded()]);
     // Initial indexing can be long; do not block the remote pull.
     void mlSync(source ? `remote-pull:${source}` : "remote-pull");
+    // fork: release keys to the home AI worker and fetch its results.
+    void homeAISync();
 };

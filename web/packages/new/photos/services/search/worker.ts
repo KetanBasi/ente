@@ -426,6 +426,7 @@ const isMatchingFile = (
         case "fileCaption":
         case "cameraMake":
         case "cameraModel":
+        case "homeAI": // fork
             return suggestion.fileIDs.includes(file.id);
 
         case "date":

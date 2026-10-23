@@ -59,6 +59,7 @@ import React, {
     type MouseEventHandler,
 } from "react";
 import { Trans } from "react-i18next";
+import { HomeAISettings } from "../fork/HomeAISettings"; // fork
 import { FreeUpSpace, type FreeUpSpaceAction } from "./FreeUpSpace";
 import { Help, type HelpAction } from "./Help";
 import { ReferralSettings } from "./ReferralSettings";
@@ -103,6 +104,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
     const { show: showPreferences, props: preferencesVisibilityProps } =
         useModalVisibility();
     const { show: showFreeUpSpace, props: freeUpSpaceVisibilityProps } =
+        useModalVisibility();
+    // fork: Home AI settings.
+    const { show: showHomeAI, props: homeAIVisibilityProps } =
         useModalVisibility();
     const { show: showExport, props: exportVisibilityProps } =
         useModalVisibility();
@@ -325,6 +329,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                 showPreferences: selectSection(showPreferences),
                                 showHelp: selectSection(showHelp),
                                 showFreeUpSpace: selectSection(showFreeUpSpace),
+                                showHomeAI: selectSection(showHomeAI), // fork
                                 onShowWatchFolder: selectSection(
                                     handleOpenWatchFolder,
                                 ),
@@ -395,6 +400,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     onRootClose={onClose}
                     pendingAction={pendingFreeUpSpaceAction}
                     onActionHandled={setPendingFreeUpSpaceAction}
+                />
+            )}
+            {/* fork: Home AI settings. */}
+            {homeAIVisibilityProps.open && (
+                <HomeAISettings
+                    {...homeAIVisibilityProps}
+                    onRootClose={onClose}
                 />
             )}
             {children?.(onClose)}
@@ -742,6 +754,7 @@ interface UtilitySectionProps {
     showPreferences: () => void;
     showHelp: () => void;
     showFreeUpSpace: () => void;
+    showHomeAI: () => void; // fork
     onShowWatchFolder: () => void;
 }
 
@@ -752,6 +765,7 @@ const UtilitySection: React.FC<UtilitySectionProps> = ({
     showPreferences,
     showHelp,
     showFreeUpSpace,
+    showHomeAI, // fork
     onShowWatchFolder,
 }) => {
     return (
@@ -778,6 +792,8 @@ const UtilitySection: React.FC<UtilitySectionProps> = ({
                 title={t("free_up_space")}
                 onClick={showFreeUpSpace}
             />
+            {/* fork: Home AI. */}
+            <RowCard variant="parent" title="Home AI" onClick={showHomeAI} />
             <RowCard
                 variant="parent"
                 title={t("preferences")}

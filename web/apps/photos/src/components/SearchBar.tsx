@@ -1,3 +1,4 @@
+import { homeAIKindLabel } from "@/components/fork/home-ai-labels"; // fork
 import { sidebarTheme } from "@/components/sidebar/theme";
 import {
     groupSearchOptions,
@@ -915,5 +916,8 @@ const labelForOption = (option: SearchOption) => {
             return searchCategoryForSuggestion(option.suggestion) === "albums"
                 ? t("album")
                 : t("settings");
+
+        case "homeAI": // fork
+            return homeAIKindLabel(option.suggestion.kind);
     }
 };
