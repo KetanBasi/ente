@@ -36,7 +36,7 @@ files as possible:
   `main`. It builds from source, unsigned:
   - server: `museum` binary, `go vet`, the Postgres-backed test suite, and
     the Docker image (not pushed);
-  - web: the photos app;
+  - web: the photos app, all wasm packages, and the web test suite;
   - desktop: the photos app on Linux and Windows, uploaded as an unpacked
     build artifact for 7 days;
   - Android: a debug APK of the photos app (`independent` flavor, arm64),
@@ -89,8 +89,13 @@ when the merge is clean and `gh` is signed in.
    access token for this repository only with **Contents**, **Pull
    requests** and **Workflows** set to read and write, and save it as the
    repository secret `FORK_SYNC_TOKEN`.
-4. **Optional: protect `main`.** Require a PR and the `Fork: Build` checks
-   before merging.
+4. **Optional: protect `main`.** In Settings, Branches (or Rules,
+   Rulesets), require a pull request with 0 approvals (you can't approve
+   your own PR), then turn on "Require status checks to pass" and add the
+   checks by job name: `Server (museum)`, `Web (photos)`,
+   `Desktop (photos, ubuntu-latest)`, `Desktop (photos, windows-latest)`,
+   `Android (photos, debug APK)` and `CI required`. GitHub only offers
+   checks that have run in this repository in the past week.
 
 ## State at fork setup (P1)
 
