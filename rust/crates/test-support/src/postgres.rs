@@ -1,6 +1,6 @@
 use std::{path::PathBuf, process::Command};
 
-use postgresql_embedded::Settings;
+use postgresql_embedded::{Settings, VersionReq};
 use postgresql_embedded::blocking::PostgreSQL;
 
 use crate::{
@@ -9,6 +9,11 @@ use crate::{
 };
 
 const DATABASE: &str = "ente_test";
+
+// fork: pin the Postgres binaries. Without a warm cache, the default (`*`)
+// downloads the newest theseus build, which rejects `TimeZone=UTC` on
+// connect and fails every museum-backed test.
+const POSTGRES_VERSION: &str = "=17";
 
 pub struct Postgres {
     inner: PostgreSQL,
@@ -72,6 +77,7 @@ pub fn start() -> TestResult<Postgres> {
         host: LOCAL_HOST.to_string(),
         port: free_port()?,
         installation_dir: install_dir()?,
+        version: VersionReq::parse(POSTGRES_VERSION)?,
         ..Settings::default()
     };
     let mut inner = PostgreSQL::new(settings);
