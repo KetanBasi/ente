@@ -59,12 +59,21 @@ body="Merges upstream \`$upstream_branch\` @ \`$theirs_sha\` into \`$base_branch
 
 Opened by \`fork/scripts/sync-upstream.sh\`. Merge with a merge commit (not squash or rebase) so the next sync only brings in new commits."
 
-existing="$(gh pr list --head "$sync_branch" --base "$base_branch" --state open --json number --jq '.[0].number // empty')"
+# The branch is already pushed, so a failure here is almost always the token
+# lacking "Pull requests: Read and write"; say so and where to open the PR.
+pr_failed() {
+    echo "::error::Could not open or update the sync PR. The $sync_branch branch is pushed."
+    echo "::error::Check that FORK_SYNC_TOKEN has Pull requests: Read and write, then re-run,"
+    echo "::error::or open the PR by hand: https://github.com/${GITHUB_REPOSITORY:-<owner>/<repo>}/compare/$base_branch...$sync_branch"
+    exit 1
+}
+
+existing="$(gh pr list --head "$sync_branch" --base "$base_branch" --state open --json number --jq '.[0].number // empty')" || pr_failed
 if [ -n "$existing" ]; then
-    gh pr edit "$existing" --title "$title" --body "$body"
+    gh pr edit "$existing" --title "$title" --body "$body" || pr_failed
     echo "Updated PR #$existing."
 else
-    gh pr create --head "$sync_branch" --base "$base_branch" --title "$title" --body "$body"
+    gh pr create --head "$sync_branch" --base "$base_branch" --title "$title" --body "$body" || pr_failed
 fi
 
 if [ "${DISPATCH_CI:-0}" = 1 ]; then
