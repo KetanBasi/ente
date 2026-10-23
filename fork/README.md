@@ -36,7 +36,7 @@ files as possible:
   `main`. It builds from source, unsigned:
   - server: `museum` binary, `go vet`, the Postgres-backed test suite, and
     the Docker image (not pushed);
-  - web: the photos app and the web test suite;
+  - web: the photos app;
   - desktop: the photos app on Linux and Windows, uploaded as an unpacked
     build artifact for 7 days;
   - Android: a debug APK of the photos app (`independent` flavor, arm64),

@@ -76,9 +76,9 @@ jobs:
 
             - run: npm ci
 
+            # Web lint and tests (which need every wasm package built) run
+            # in upstream's CI workflow, selected by changed paths.
             - run: npm run build:photos
-
-            - run: npm test
 
     desktop:
         name: Desktop (photos, ${{ matrix.os }})
