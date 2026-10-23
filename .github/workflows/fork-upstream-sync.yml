@@ -1,0 +1,51 @@
+name: "Fork: Upstream sync"
+
+# Weekly: merge ente-io/ente main into fork/sync-upstream and open a PR into
+# main, then disable upstream-only workflows. See fork/README.md.
+
+on:
+    schedule:
+        # Mondays at 03:00 UTC
+        - cron: "0 3 * * 1"
+    workflow_dispatch:
+
+permissions:
+    actions: write
+    contents: write
+    pull-requests: write
+
+concurrency:
+    group: fork-upstream-sync
+    cancel-in-progress: false
+
+jobs:
+    sync:
+        if: github.repository != 'ente-io/ente' && github.repository != 'ente/ente'
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  ref: main
+                  fetch-depth: 0
+                  filter: blob:none
+                  # A token with workflow scope can push upstream's workflow
+                  # changes; the default GITHUB_TOKEN cannot.
+                  token: ${{ secrets.FORK_SYNC_TOKEN || github.token }}
+
+            - name: Merge upstream and open PR
+              run: |
+                  git config user.name "github-actions[bot]"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  fork/scripts/sync-upstream.sh
+              env:
+                  GH_TOKEN: ${{ secrets.FORK_SYNC_TOKEN || github.token }}
+                  # PRs and pushes made with GITHUB_TOKEN don't start other
+                  # workflows, so start the fork build ourselves.
+                  DISPATCH_CI: ${{ secrets.FORK_SYNC_TOKEN == '' && '1' || '0' }}
+
+            - name: Disable upstream-only workflows
+              if: ${{ !cancelled() }}
+              run: ruby fork/scripts/quiet-upstream-workflows.rb
+              env:
+                  GH_TOKEN: ${{ github.token }}
