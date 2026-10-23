@@ -1,4 +1,8 @@
-use std::{path::PathBuf, process::Command};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+    process::Command,
+};
 
 use postgresql_embedded::Settings;
 use postgresql_embedded::blocking::PostgreSQL;
@@ -76,9 +80,47 @@ pub fn start() -> TestResult<Postgres> {
     };
     let mut inner = PostgreSQL::new(settings);
     inner.setup()?;
+    restore_utc_zone(&inner.settings().binary_dir())?;
     inner.start()?;
     inner.create_database(DATABASE)?;
     Ok(Postgres { inner })
+}
+
+// fork: postgresql_archive's tar extractor skips hard links, and the theseus
+// archives store the tz database's aliases (`UTC` among them) as hard links.
+// Without `UTC` the server rejects the `TimeZone=UTC` that sqlx sends on
+// connect, failing every museum-backed test. Copy it back from an alias that
+// survived extraction.
+fn restore_utc_zone(binary_dir: &Path) -> TestResult {
+    const UTC_ALIASES: [&str; 7] = [
+        "Etc/UTC",
+        "Etc/UCT",
+        "Etc/Universal",
+        "Etc/Zulu",
+        "UCT",
+        "Universal",
+        "Zulu",
+    ];
+    let Some(prefix) = binary_dir.parent() else {
+        return Ok(());
+    };
+    for tz_dir in [
+        prefix.join("share").join("timezone"),
+        prefix.join("share").join("postgresql").join("timezone"),
+    ] {
+        let utc = tz_dir.join("UTC");
+        if !tz_dir.is_dir() || utc.is_file() {
+            continue;
+        }
+        if let Some(source) = UTC_ALIASES
+            .iter()
+            .map(|alias| tz_dir.join(alias))
+            .find(|path| path.is_file())
+        {
+            fs::copy(source, utc)?;
+        }
+    }
+    Ok(())
 }
 
 // postgresql_embedded defaults its binary to a `~/.theseus` dir in $HOME; keep
