@@ -38,6 +38,9 @@ cd ente/server/config
 
 On Linux later, the same steps work unchanged.
 
+**Using Podman instead of Docker?** See "Podman" right after Part 1; only
+the prerequisites and the command prefix differ.
+
 ### 2. Configure: `.env` and `museum.yaml`
 
 Both files live in `server/config/` and are git-ignored. Upstream's
@@ -266,6 +269,52 @@ git pull && docker compose up -d --build   # update to the fork's latest main
 `docker compose down -v` deletes the volumes, which means **all photos and
 the database**. Only for a fresh start.
 
+## Podman instead of Docker (Podman Desktop on Windows)
+
+The same `server/config/compose.yaml` works with Podman. The only
+differences are where you run the commands and how compose talks to Podman.
+
+1. In Podman Desktop, create and start a Podman machine (Settings,
+   Resources, or the first-run wizard; it uses WSL2). Then install the
+   **Compose** extension (Settings, Extensions), or any `docker-compose`
+   v2.30 or newer. Older compose, and `podman-compose`, may ignore
+   `post_start`, so the MinIO buckets would not be created.
+2. Run the guide's commands in a terminal where `podman compose version`
+   works. `podman compose` hands over to `docker-compose`, so replace
+   `docker compose ...` with `podman compose ...` everywhere in Part 1.
+   `docker compose exec ...` becomes `podman compose exec ...` (or
+   `podman exec config-minio-1 ...`).
+3. Do the clone and all file edits wherever you run those commands. If that
+   is a WSL2 distro, make sure `podman` there talks to the machine
+   (Podman Desktop can add a `podman` shim, or use `podman --remote`).
+4. Everything else, including the ports and the `localhost:3200` bucket
+   endpoint, is unchanged.
+
+Also tested for this guide: Podman 4.9 on Linux (rootful), with the Docker
+compose plugin pointed at Podman's Docker-compatible socket
+(`DOCKER_HOST=unix:///run/podman/podman.sock`). Museum built from source,
+the stack came up, buckets were created, and sign-up and a 6-photo web
+upload worked with 12 objects in MinIO.
+
+Gotchas:
+
+- Podman publishes ports to `localhost` on Windows, but reaching them from
+  **other devices** goes through Podman's own port forwarding rather than
+  WSL's, and whether it listens on the LAN interface depends on the machine
+  mode. If a phone can't connect while the PC can, try Tailscale on the
+  Windows host first (Part 1, step 7), or forward with
+  `netsh interface portproxy add v4tov4 listenport=8080 connectaddress=127.0.0.1 connectport=8080`
+  (repeat for `3000` and `3200`) plus a firewall rule.
+- Build memory: give the Podman machine enough RAM for the web image build
+  (about 6 to 8 GB): `podman machine set --memory 8192` while it is
+  stopped.
+- A name like `postgres:15-trixie` is pulled from `docker.io`; if Podman
+  asks which registry to use, pick `docker.io`.
+- In our Linux sandbox without systemd, Podman never ran the Postgres
+  healthcheck on its own, so `depends_on: service_healthy` waited forever.
+  A Podman machine runs systemd, so this should not happen; if museum never
+  starts, run `podman healthcheck run config-postgres-1` once to check.
+
 ## Part 2 (optional): Home AI
 
 Turns on the fork's worker features on top of Part 1. Details:
@@ -407,7 +456,7 @@ museum image was built from the same `Dockerfile` with proxy settings
 added, and the web app was built with `npm run build:photos` and served by
 nginx instead of the `ente-web` image.
 
-Not verified (no hardware for it): WSL2 and Docker Desktop specifics,
+Not verified (no hardware for it): WSL2, Docker Desktop and Podman Desktop on Windows (the Podman machine, its compose extension and its LAN port forwarding),
 Windows Firewall, mirrored networking, Tailscale and LAN access from other
 devices, the desktop and mobile apps (including the desktop ML indexing the
 worker waits for), the Ente CLI subscription change, systemd credentials and
