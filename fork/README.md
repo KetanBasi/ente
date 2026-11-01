@@ -106,6 +106,13 @@ when the merge is clean and `gh` is signed in.
 - Building, signing and deploying for real use, and a stock self-hosted
   baseline (P0), are not part of this setup.
 
+## Running it locally (P0)
+
+[docs/p0-local-deploy.md](docs/p0-local-deploy.md): run museum, Postgres,
+MinIO and the web app from this fork's source on a home PC (WSL2 or
+Linux), sign up, upload, reach it from other devices, and optionally turn
+on Home AI.
+
 ## Home AI worker (P2)
 
 The one server change: a worker key allowlist in `museum.yaml`, an inbox of
