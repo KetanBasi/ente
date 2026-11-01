@@ -257,6 +257,52 @@ app, or put HTTPS in front (`tailscale serve`, or Caddy; see upstream's
 another device that hang usually mean the bucket `endpoint` isn't
 reachable from that device (museum logs `OBJECT_SIZE_FETCH_FAILED`).
 
+### Optional: server on the SSD, photos on the HDD
+
+Most of the disk use is MinIO's photo data; Postgres (metadata, thumbnails'
+index) is small and benefits from the SSD. So put only MinIO's `/data` on
+the HDD and leave everything else, including the Docker images and the
+Postgres volume, on the SSD.
+
+1. Make a folder on the HDD (see the WSL2 note below), e.g. `/mnt/hdd/ente-photos`.
+2. Create `server/config/compose.override.yaml` next to `compose.yaml`
+   (compose reads it automatically; keep it local, don't commit it):
+
+   ```yaml
+   services:
+       minio:
+           volumes:
+               - /mnt/hdd/ente-photos:/data
+   ```
+
+   It replaces the `minio-data:/data` volume. Check with
+   `docker compose config`, then `docker compose up -d --force-recreate minio`.
+3. Do this **before** the first upload. To move data you already have, stop
+   the stack, copy the contents of the `config_minio-data` volume into the
+   folder (`docker run --rm -v config_minio-data:/from -v /mnt/hdd/ente-photos:/to alpine cp -a /from/. /to/`),
+   then start with the override.
+
+Bind mounts are not in `docker compose down -v`, so wipe the folder yourself
+for a fresh start. Back up the folder together with a `pg_dump` (the photos
+are useless without the database and `museum.yaml`).
+
+**WSL2.** A Windows HDD is `/mnt/d` etc. inside WSL2, over a slow file
+bridge. It works for MinIO but is the weakest option for speed and for
+file-sync reliability. Better, in order:
+
+- Move the whole WSL distro to the HDD
+  (`wsl --export`, `wsl --unregister`, `wsl --import ... D:\wsl\ubuntu`).
+  That also puts Docker's images on the HDD, so you lose the SSD benefit
+  for them.
+- Keep the distro on the SSD and attach an ext4 disk file stored on the HDD
+  as the photo store (create a `.vhdx`, then `wsl --mount --vhd`). This
+  gets real Linux file semantics with the data on the HDD. Needs a manual
+  mount after each Windows reboot.
+- Simplest: use `/mnt/d/ente-photos` and accept the speed.
+
+Docker Desktop and Podman Desktop keep their own VM disk (on the SSD by
+default); the bind mount above is what moves the photos.
+
 ### Day to day
 
 ```sh
@@ -455,6 +501,10 @@ through its proxy unaided, so the base images came from a mirror, the
 museum image was built from the same `Dockerfile` with proxy settings
 added, and the web app was built with `npm run build:photos` and served by
 nginx instead of the `ente-web` image.
+
+The HDD/SSD override was checked on Linux with Podman: compose merged it
+over the named volume and MinIO created its buckets in the bind-mounted
+folder. The WSL2 disk options for it are untested.
 
 Not verified (no hardware for it): WSL2, Docker Desktop and Podman Desktop on Windows (the Podman machine, its compose extension and its LAN port forwarding),
 Windows Firewall, mirrored networking, Tailscale and LAN access from other
